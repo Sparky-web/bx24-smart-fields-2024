@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitrix24 Iframe Emulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+        }
+        label {
+            display: block;
+            margin: 10px 0;
+        }
+        input, textarea {
+            width: 100%;
+            margin-top: 5px;
+            padding: 8px;
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        iframe {
+            border: 1px solid #ccc;
+            width: 100%;
+            height: 500px;
+            margin-top: 20px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bitrix24 Iframe Emulator</h1>
+    <form id="params-form">
+        <label>
+            Base URL to Load Frame:
+            <input type="text" id="base-url" placeholder="https://example.bitrix24.com/path/to/app" required>
+        </label>
+        <label>
+            Query String:
+            <input type="text" id="query-string" placeholder="DOMAIN=example.bitrix24.com&PROTOCOL=1&LANG=en&APP_SID=12345" required>
+        </label>
+        <label>
+            Frame Name:
+            <input type="text" id="frame-name" placeholder="example.bitrix24.com|1|12345" required>
+        </label>
+        <label>
+            Response for `getInitData` (JSON):
+            <textarea id="get-init-data">
+{
+    "DOMAIN": "example.bitrix24.com",
+    "AUTH_ID": "abcdef12345",
+    "REFRESH_ID": "refresh12345",
+    "AUTH_EXPIRES": 3600,
+    "LANG": "en",
+    "MEMBER_ID": "member12345",
+    "IS_ADMIN": true,
+    "PLACEMENT": "DEFAULT",
+    "PLACEMENT_OPTIONS": {}
+}
+            </textarea>
+        </label>
+        <button type="submit">Save & Load Iframe</button>
+    </form>
+
+    <iframe id="app-iframe"></iframe>
+
+    <script>
+        // Load saved parameters from localStorage
+        function loadParams() {
+            return JSON.parse(localStorage.getItem('iframe-params') || '{}');
+        }
+
+        // Save parameters to localStorage
+        function saveParams(params) {
+            localStorage.setItem('iframe-params', JSON.stringify(params));
+        }
+
+        // Initialize iframe with provided parameters
+        function loadIframe(params) {
+            const iframe = document.getElementById('app-iframe');
+            iframe.src = `${params.baseUrl}?${params.queryString}`;
+            iframe.name = params.frameName;
+        }
+
+        // Handle form submission
+        document.getElementById('params-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Collect inputs
+            const params = {
+                baseUrl: document.getElementById('base-url').value,
+                queryString: document.getElementById('query-string').value,
+                frameName: document.getElementById('frame-name').value,
+                getInitData: document.getElementById('get-init-data').value
+            };
+
+            // Save parameters and load iframe
+            saveParams(params);
+            loadIframe(params);
+        });
+
+        // Respond to getInitData message
+        window.addEventListener('message', (event) => {
+            const { method, callback } = event.data;
+
+            if (method === 'getInitData') {
+                try {
+                    const params = loadParams();
+                    const response = JSON.parse(params.getInitData);
+
+                    // Send response to the iframe
+                    event.source.postMessage({ callback, data: response }, event.origin);
+                } catch (error) {
+                    console.error("Invalid JSON in 'getInitData' field:", error);
+                }
+            }
+        });
+
+        // Load saved parameters and initialize iframe on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = loadParams();
+
+            // Populate fields with saved values
+            if (params.baseUrl) document.getElementById('base-url').value = params.baseUrl;
+            if (params.queryString) document.getElementById('query-string').value = params.queryString;
+            if (params.frameName) document.getElementById('frame-name').value = params.frameName;
+            if (params.getInitData) document.getElementById('get-init-data').value = params.getInitData;
+
+            // Load iframe if parameters are present
+            if (params.baseUrl && params.queryString && params.frameName) {
+                loadIframe(params);
+            }
+        });
+    </script>
+</body>
+</html>
