@@ -29,9 +29,8 @@ export function FormSelectField(props: FormFieldSelectInterface) {
                 value={props.field.state.value}
                 onValueChange={(value) => props.field.handleChange(value)}
             >
-
-                <SelectTrigger>
-                    <SelectValue placeholder="Выберите" />
+                <SelectTrigger className="whitespace-break-spaces">
+                    <SelectValue placeholder="Выберите" className=" "></SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                     <SelectGroup>

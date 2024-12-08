@@ -12,6 +12,7 @@ import { type Metadata } from "next";
 import { useEffect } from 'react';
 import { B24Frame } from '@bitrix24/b24jssdk';
 import { BX24Provider } from "./_lib/context/bx24";
+import { Toaster } from "~/components/ui/sonner";
 
 const queryClient = new QueryClient()
 
@@ -25,11 +26,13 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
 
+  
   return (
 
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
         <QueryClientProvider client={queryClient}>
+          <Toaster />
           <BX24Provider>
             {children}
 

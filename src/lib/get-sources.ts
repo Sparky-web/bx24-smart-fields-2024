@@ -6,7 +6,7 @@ type DataSourceBase = {
     label: string
 }
 
-type DataSourceSelectable = DataSourceBase | {
+export type DataSourceSelectable = DataSourceBase | {
     label: string
     values: DataSourceBase[]
 }
@@ -60,7 +60,7 @@ export default async function getSources(bx24: B24Frame) {
     const data2 = await bx24.callMethod('lists.get', {
         IBLOCK_TYPE_ID: 'lists'
     }).then(r => r.getData())
-    
+
     result.push(
         {
             label: 'Списки',
@@ -86,10 +86,10 @@ export default async function getSources(bx24: B24Frame) {
     )
 
     // const data4 = await bx24.callMethod('sonet_group.get', {
-    //     // IS_ADMIN: 'Y'
+    //     IS_ADMIN: 'Y'
     // }).then(r => r.getData())
 
-    // console.log(data4)
+
 
     const data5 = await bx24.callMethod('crm.status.entity.types').then(r => r.getData())
     result.push(
@@ -101,6 +101,16 @@ export default async function getSources(bx24: B24Frame) {
             }))
         }
     )
+
+    result.push({
+        label: 'Группы',
+        values: [
+            {
+                label: 'Группы',
+                value: 'sonet_group',
+            }
+        ]
+    })
 
     return result
 }

@@ -3,7 +3,7 @@ export interface ConfigurationItem {
     id: string;
     placement: Placement;
     isMultiselect: boolean;
-    source: DataSource
+    source: DataSource;
 }
 
 export type DataSourceType = 'item' | 'list' | 'sonet_group' | 'status'
@@ -11,22 +11,40 @@ export type DataSourceType = 'item' | 'list' | 'sonet_group' | 'status'
 export type DataSourceBase = {
     id: `list.${'bitrix_processes' | 'lists'}.${string}` | `${DataSourceType}.${string}` | ''
     label: string
+
 }
 
-export type Filter = {
-    sourceField: string
+type FilterBase = {
+    sourceField: string;
+    operator: "=" | "!=" | ">" | "<" | ">=" | "<=" | "%" | "!%"
+}
+
+export type Filter = FilterBase & ({
     type: 'static'
     value: string
 } | {
-    sourceField: string
     type: 'dynamic'
     connectOnField: string
-}
+})
 
 export type DataSource = {
     enableFilters: Boolean
     filters: Filter[]
+    grouping: {
+        enabled: boolean
+        groups: ({
+            title: string
+        } & Filter)[]
+    },
+    sorting: {
+        enabled: boolean
+        sortBy: {
+            sourceField: string
+            type: 'asc' | 'desc'
+        }
+    },
+    loadFull: boolean
 } & DataSourceBase
 
-export type Placement = 'deal' | 'lead' | 'contact' | 'company'
+export type Placement = `item.${number}` 
 

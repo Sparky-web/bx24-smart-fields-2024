@@ -3,13 +3,12 @@ import { createContext, useContext, useEffect, useState } from "react";
 import ChildrenInterface from "~/types/children-interface";
 
 import { env } from '~/env';
+// import * as bx from "@bitrix24/b24jssdk"
 
-const bx = (
-  env.NEXT_PUBLIC_NODE_ENV === 'production'
-) ? await import ('@bitrix24/b24jssdk') : await import ('~/lib/bx24-localhost-3000')
+const bx = await import('~/lib/bx24-localhost-3000')
 
 const {
-  initializeB24Frame,
+    initializeB24Frame,
 } = bx
 
 export const BX24Context = createContext({} as B24Frame)
@@ -25,9 +24,9 @@ export const BX24Provider = (props: ChildrenInterface) => {
             .catch((error) => {
                 console.error(error)
             })
-    }, [])  
+    }, [])
 
-    if(!bx24) return 'Загрузка...'
+    if (!bx24) return 'Загрузка...'
 
     return <BX24Context.Provider value={bx24}>
         {bx24 && props.children}

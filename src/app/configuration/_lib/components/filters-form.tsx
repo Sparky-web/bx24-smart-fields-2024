@@ -9,9 +9,22 @@ import { Label, LabelGroup } from "~/components/custom/label-group";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { H4 } from "~/components/ui/typography";
-import getFields from "~/lib/get-placement-fields";
+import getPlacementFields from "~/lib/get-placement-fields";
 import getSourceFields from "~/lib/get-source-fields";
+import { z } from "~/lib/zod";
 import { ConfigurationItem } from "~/types";
+
+export const operators = [
+    {value: '%', label: 'Содержит (%)'},
+    {value: '!%', label: 'Не содержит (!%)'},
+    {value: '=', label: 'Равно (=)'},
+    {value: '!=', label: 'Не равно (!=)'},
+    {value: '>', label: 'Больше (>)'},
+    {value: '<', label: 'Меньше (<)'},
+    {value: '>=', label: 'Больше или равно (>=)'},
+    {value: '<=', label: 'Меньше или равно (<=)'},
+]
+
 
 export default function FiltersForm(props: {
     form: FormApi<ConfigurationItem, undefined> & ReactFormApi<ConfigurationItem>
@@ -30,7 +43,7 @@ export default function FiltersForm(props: {
 
     const bx24 = useBitrix()
 
-    const placementFields = useQuery({ queryKey: ['placementFields', placementField.state.value], queryFn: () => getFields(bx24, placementField.state.value) })
+    const placementFields = useQuery({ queryKey: ['placementFields', placementField.state.value], queryFn: () => getPlacementFields(bx24, placementField.state.value) })
     const sourceFields = useQuery({ queryKey: ['sourceFields', sourceField.state.value.id], queryFn: () => getSourceFields(bx24, sourceField.state.value) })
 
     return (
@@ -57,8 +70,12 @@ export default function FiltersForm(props: {
                                 <H4>Фильтры</H4>
                                 {field.state.value.map((filter, index) => (
                                     <Card className="bg-slate-50 flex justify-between items-center gap-2 p-4" key={index}>
-                                        <div className="grid grid-cols-3 gap-4 flex-1">
-                                            <form.Field name={`source.filters[${index}].sourceField`}>
+                                        <div className="grid grid-cols-4 gap-4 flex-1">
+                                            <form.Field name={`source.filters[${index}].sourceField`}
+                                                validators={{
+                                                    onChange: z.string().min(1, 'Обязательно для заполнения')
+                                                }}
+                                            >
                                                 {field => (
                                                     <LabelGroup>
                                                         <Label>Поле из источника</Label>
@@ -77,6 +94,14 @@ export default function FiltersForm(props: {
                                                 )}
                                             </form.Field>
 
+                                            <form.Field name={`source.filters[${index}].operator`}>
+                                                {field => (
+                                                    <LabelGroup>
+                                                        <Label>Оператор</Label>
+                                                        <FormSelectField field={field} options={operators} />
+                                                    </LabelGroup>
+                                                )}
+                                            </form.Field>
 
                                             {filter.type === 'static' && (
                                                 <form.Field name={`source.filters[${index}].value`}>
@@ -107,7 +132,7 @@ export default function FiltersForm(props: {
                                     </Card>
                                 ))}
 
-                                <Button className="max-w-[300px]" variant={'secondary'} onClick={() => field.pushValue({ type: 'static', value: '', sourceField: '' })}> 
+                                <Button className="max-w-[300px]" variant={'secondary'} onClick={() => field.pushValue({ type: 'static', value: '', sourceField: '' })}>
                                     <Plus />
                                     Добавить фильтр
                                 </Button>

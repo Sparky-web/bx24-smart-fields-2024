@@ -2,7 +2,7 @@ import ChildrenInterface from "~/types/children-interface";
 
 export function LabelGroup (props: ChildrenInterface) {
     return (
-        <div className="grid gap-1">
+        <div className="grid gap-1 content-start">
             {props.children || ''}
         </div>
     )
